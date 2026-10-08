@@ -1,0 +1,856 @@
+/* AVTOPOLIGON: Super Mashinalar Poygasi 3D Styling */
+
+:root {
+  --neon-cyan: #00f0ff;
+  --neon-red: #ff0055;
+  --neon-gold: #ffb703;
+  --neon-green: #00ff88;
+  --bg-dark: #070913;
+  --panel-bg: rgba(12, 17, 34, 0.78);
+  --panel-border: rgba(0, 240, 255, 0.28);
+  --font-tech: 'Orbitron', -apple-system, sans-serif;
+  --font-ui: 'Rajdhani', -apple-system, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: var(--font-ui);
+  color: #ffffff;
+}
+
+#game-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Nitro & Speed Blur Visual Effects */
+.fx-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+  opacity: 0;
+}
+
+.fx-overlay.active {
+  opacity: 1;
+  background: radial-gradient(circle at center, transparent 40%, rgba(0, 240, 255, 0.18) 85%, rgba(0, 150, 255, 0.4) 100%);
+  box-shadow: inset 0 0 100px rgba(0, 240, 255, 0.35);
+}
+
+.fx-overlay.crash-flash {
+  opacity: 1 !important;
+  background: rgba(255, 0, 50, 0.5) !important;
+}
+
+/* Glassmorphism Generic Card */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Action Banner */
+.action-banner {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.85);
+  background: linear-gradient(90deg, rgba(255, 0, 85, 0.9), rgba(0, 240, 255, 0.9));
+  padding: 10px 28px;
+  border-radius: 30px;
+  font-family: var(--font-tech);
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.action-banner.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* MAIN MENU & GARAGE OVERLAY */
+.menu-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  pointer-events: auto;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.menu-overlay.hidden, .hud-overlay.hidden, .modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97);
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 0 10px var(--neon-cyan));
+}
+
+.brand-title {
+  font-family: var(--font-tech);
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ffffff 30%, var(--neon-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.menu-top-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.top-pill {
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-tech);
+  font-size: 0.95rem;
+}
+
+.top-pill.coins {
+  border-color: rgba(255, 183, 3, 0.5);
+  color: var(--neon-gold);
+  box-shadow: 0 0 15px rgba(255, 183, 3, 0.2);
+}
+
+/* Garage Center & Car Selector */
+.garage-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.car-info-card {
+  width: 360px;
+  padding: 22px;
+}
+
+.car-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 4px;
+  font-family: var(--font-tech);
+  font-size: 0.75rem;
+  color: var(--neon-cyan);
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+.car-title {
+  font-family: var(--font-tech);
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.car-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.stat-label {
+  width: 90px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.stat-val {
+  width: 70px;
+  text-align: right;
+  font-family: var(--font-tech);
+  font-size: 0.8rem;
+  color: var(--neon-cyan);
+}
+
+/* Car Navigation Arrows */
+.garage-nav-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.nav-arrow {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 2px solid var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.nav-arrow:hover {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-cyan);
+  transform: scale(1.08);
+}
+
+/* Upgrades & Customization Panel */
+.customization-card {
+  width: 380px;
+  padding: 22px;
+}
+
+.card-heading {
+  font-family: var(--font-tech);
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  color: var(--neon-cyan);
+  margin-bottom: 12px;
+}
+
+.color-palette {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.color-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-dot.active {
+  transform: scale(1.18);
+  border-color: #ffffff;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+.upgrade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upg-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
+.upg-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.upg-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.upg-lvl {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.btn-mini-upg {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05));
+  border: 1px solid var(--neon-cyan);
+  border-radius: 6px;
+  color: var(--neon-cyan);
+  font-family: var(--font-tech);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mini-upg:hover {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+/* Garage Footer Controls */
+.menu-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 16px 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.track-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.track-label {
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.track-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.track-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.track-btn.active {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+}
+
+.btn-cta {
+  padding: 14px 44px;
+  border-radius: 12px;
+  font-family: var(--font-tech);
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+.btn-play {
+  background: linear-gradient(135deg, #00f0ff 0%, #0077ff 100%);
+  color: #030a16;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+}
+
+.btn-play:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.8);
+}
+
+.btn-buy {
+  background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%);
+  color: #1a1000;
+  box-shadow: 0 0 25px rgba(255, 183, 3, 0.5);
+}
+
+.btn-buy:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 35px rgba(255, 183, 3, 0.8);
+}
+
+/* GAME HUD (IN-GAME DISPLAY) */
+.hud-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hud-stats-cluster {
+  display: flex;
+  gap: 16px;
+}
+
+.hud-card {
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+}
+
+.hud-card-lbl {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.hud-card-val {
+  font-family: var(--font-tech);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.hud-card.coins-hud .hud-card-val {
+  color: var(--neon-gold);
+}
+
+.hud-card.overtake-hud .hud-card-val {
+  color: var(--neon-red);
+}
+
+.hud-quick-actions {
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 14px var(--neon-cyan);
+}
+
+/* Bottom HUD: Tachometer & Nitro */
+.hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.hud-left-controls-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nitro-cluster {
+  width: 280px;
+  padding: 14px 18px;
+}
+
+.nitro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.nitro-title {
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--neon-cyan);
+}
+
+.nitro-pct {
+  font-family: var(--font-tech);
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.nitro-track {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.nitro-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00f0ff, #0077ff);
+  box-shadow: 0 0 12px var(--neon-cyan);
+  transition: width 0.1s linear;
+}
+
+.keys-legend {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.key-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  font-family: var(--font-tech);
+  font-size: 0.75rem;
+  color: #fff;
+}
+
+/* Hyper Tachometer Dashboard (Bottom Right) */
+.tach-cluster {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tach-dial {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(10, 16, 32, 0.85) 50%, rgba(5, 9, 20, 0.95) 100%);
+  border: 3px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tach-ticks {
+  position: absolute;
+  width: 88%;
+  height: 88%;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.needle-pivot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.needle {
+  position: absolute;
+  bottom: 0;
+  left: -2px;
+  width: 4px;
+  height: 82px;
+  background: linear-gradient(to top, var(--neon-red), #ff7799);
+  border-radius: 2px;
+  transform-origin: bottom center;
+  box-shadow: 0 0 10px var(--neon-red);
+  transform: rotate(-110deg);
+  transition: transform 0.08s linear;
+}
+
+.tach-center-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  margin-top: 25px;
+}
+
+.speed-digital {
+  font-family: var(--font-tech);
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(0, 240, 255, 0.8);
+}
+
+.speed-unit {
+  font-family: var(--font-tech);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+}
+
+.gear-badge {
+  margin-top: 4px;
+  font-family: var(--font-tech);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--neon-gold);
+}
+
+/* Mobile Touch Controls */
+.touch-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.touch-cluster {
+  display: flex;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+.touch-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(12, 17, 34, 0.8);
+  border: 2px solid var(--neon-cyan);
+  color: #fff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  touch-action: manipulation;
+}
+
+.touch-btn:active {
+  background: var(--neon-cyan);
+  color: #000;
+  transform: scale(0.92);
+}
+
+.touch-btn.btn-nitro {
+  border-color: #ff0055;
+}
+.touch-btn.btn-nitro:active {
+  background: #ff0055;
+}
+
+/* GAME OVER MODAL */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+  background: rgba(3, 5, 12, 0.85);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.modal-card {
+  width: 440px;
+  padding: 36px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-icon {
+  font-size: 3.2rem;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-family: var(--font-tech);
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: var(--neon-red);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.modal-subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.modal-stats-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.modal-stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.modal-stat-num {
+  font-family: var(--font-tech);
+  font-weight: 700;
+  color: var(--neon-cyan);
+}
+
+.modal-stat-num.highlight {
+  color: var(--neon-gold);
+}
+
+.modal-btns {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+}
+
+.modal-btns button {
+  flex: 1;
+}
+
+/* Responsive adjust */
+@media (max-width: 900px) {
+  .menu-overlay {
+    padding: 14px;
+    overflow-y: auto;
+  }
+  .garage-center {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .car-info-card, .customization-card {
+    width: 100%;
+  }
+  .menu-footer {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .tach-cluster {
+    width: 160px;
+    height: 160px;
+  }
+  .speed-digital {
+    font-size: 2.2rem;
+  }
+}

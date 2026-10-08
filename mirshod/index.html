@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AVTOPOLIGON 3D - Mashinalar Poygasi & Drift</title>
+  <meta name="description" content="O'zbekiston va jahon superkarlari (BMW M5, Malibu 2 Turbo, Gentra Tuned, Lamborghini, Bugatti) ishtirokidagi 3D poyga o'yini!">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Three.js 3D WebGL Library (Offline local fallback + CDN) -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- WebGL 3D Viewport -->
+  <div id="game-viewport"></div>
+
+  <!-- Screen FX (Speed Blur / Nitro Flames / Crash) -->
+  <div id="nitro-blur-fx" class="fx-overlay"></div>
+
+  <!-- Floating Action Banner -->
+  <div id="action-banner" class="action-banner">🔥 XAVFLI QUVIB O'TISH!</div>
+
+  <!-- ==================== MAIN MENU & GARAJ OVERLAY ==================== -->
+  <div id="menu-overlay" class="menu-overlay">
+    <!-- Header -->
+    <header class="menu-header">
+      <div class="brand-wrap">
+        <span class="brand-icon">🏎️</span>
+        <div>
+          <h1 class="brand-title">AVTOPOLIGON 3D</h1>
+          <p class="brand-subtitle">SUPER MASHINALAR POYGASIDA CHEMPION BO'LING</p>
+        </div>
+      </div>
+
+      <div class="menu-top-stats">
+        <div class="glass-panel top-pill coins">
+          <span>🪙</span>
+          <span id="menu-coins-count">500</span>
+          <span>TANGA</span>
+        </div>
+        <div class="glass-panel top-pill">
+          <span>🏆 REKORD:</span>
+          <span id="menu-best-score">0</span>
+        </div>
+        <div class="glass-panel top-pill">
+          <span>🛣️ MASOFA:</span>
+          <span id="menu-best-dist">0.0 km</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Center: Car Info & Upgrades -->
+    <div class="garage-center">
+      <!-- Left: Car Details & Stats -->
+      <div class="glass-panel car-info-card">
+        <span id="car-badge" class="car-badge">M-POWER</span>
+        <h2 id="car-title" class="car-title">BMW M5 F90 CS</h2>
+        <p id="car-desc" class="car-desc">4.4L TwinPower Turbo V8, 635 ot kuchi. Afsonaviy drift va tezlik qiroli!</p>
+
+        <div class="stats-grid">
+          <div class="stat-row">
+            <span class="stat-label">⚡ TEZLIK</span>
+            <div class="bar-track">
+              <div id="stat-speed-bar" class="bar-fill" style="width: 75%"></div>
+            </div>
+            <span id="stat-speed-val" class="stat-val">330 km/h</span>
+          </div>
+
+          <div class="stat-row">
+            <span class="stat-label">🚀 TEZLANISH</span>
+            <div class="bar-track">
+              <div id="stat-accel-bar" class="bar-fill" style="width: 85%"></div>
+            </div>
+            <span id="stat-accel-val" class="stat-val">3.0s</span>
+          </div>
+
+          <div class="stat-row">
+            <span class="stat-label">🎯 BOSHQARUV</span>
+            <div class="bar-track">
+              <div id="stat-handling-bar" class="bar-fill" style="width: 80%"></div>
+            </div>
+            <span id="stat-handling-val" class="stat-val">88%</span>
+          </div>
+
+          <div class="stat-row">
+            <span class="stat-label">💥 NITRO</span>
+            <div class="bar-track">
+              <div id="stat-nitro-bar" class="bar-fill" style="width: 90%"></div>
+            </div>
+            <span id="stat-nitro-val" class="stat-val">90%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Arrows to switch cars -->
+      <div class="garage-nav-wrap">
+        <button id="garage-prev" class="nav-arrow" title="Oldingi mashina">‹</button>
+        <button id="garage-next" class="nav-arrow" title="Keyingi mashina">›</button>
+      </div>
+
+      <!-- Right: Color Customizer & Upgrade Shop -->
+      <div class="glass-panel customization-card">
+        <h3 class="card-heading">🎨 BO'YASH & TYUNING</h3>
+        <div class="color-palette">
+          <div class="color-dot active" data-color="#0055ff" style="background: #0055ff" title="M-Ko'k"></div>
+          <div class="color-dot" data-color="#111113" style="background: #111113" title="Tanirovka Qora"></div>
+          <div class="color-dot" data-color="#ffffff" style="background: #ffffff" title="Oq Marvarid"></div>
+          <div class="color-dot" data-color="#ff0044" style="background: #ff0044" title="Qizil Alanga"></div>
+          <div class="color-dot" data-color="#00e5ff" style="background: #00e5ff" title="Kiber Cyan"></div>
+          <div class="color-dot" data-color="#ffb703" style="background: #ffb703" title="Oltin Sariq"></div>
+          <div class="color-dot" data-color="#109b43" style="background: #109b43" title="Yashil Zumrad"></div>
+        </div>
+
+        <h3 class="card-heading">🔧 TEXNIK KUCHAYTIRISH</h3>
+        <div class="upgrade-list">
+          <div class="upg-item">
+            <div class="upg-meta">
+              <span class="upg-name">Dvigatel (Tezlik)</span>
+              <span id="upg-engine-lvl" class="upg-lvl">Bosqich: 0/5 (500 🪙)</span>
+            </div>
+            <button id="btn-upgrade-engine" class="btn-mini-upg">+ OSHIRISH</button>
+          </div>
+
+          <div class="upg-item">
+            <div class="upg-meta">
+              <span class="upg-name">Podveska & Shinalar</span>
+              <span id="upg-handling-lvl" class="upg-lvl">Bosqich: 0/5 (400 🪙)</span>
+            </div>
+            <button id="btn-upgrade-handling" class="btn-mini-upg">+ OSHIRISH</button>
+          </div>
+
+          <div class="upg-item">
+            <div class="upg-meta">
+              <span class="upg-name">Nitro Turbina</span>
+              <span id="upg-nitro-lvl" class="upg-lvl">Bosqich: 0/5 (450 🪙)</span>
+            </div>
+            <button id="btn-upgrade-nitro" class="btn-mini-upg">+ OSHIRISH</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer: Track select & Play button -->
+    <footer class="menu-footer">
+      <div class="track-selector">
+        <span class="track-label">🛣️ MUHIT / TRASSA:</span>
+        <div class="track-btns">
+          <button class="track-btn active" data-track="night">Toshkent Tuni 🌆</button>
+          <button class="track-btn" data-track="sunset">Chortoq Kanyoni 🌅</button>
+          <button class="track-btn" data-track="cyber">Kiberpunk 2077 ⚡</button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="btn-buy-car" class="btn-cta btn-buy" style="display: none;">🪙 SOTIB OLISH</button>
+        <button id="btn-play" class="btn-cta btn-play">⚡ POYGANI BOSHLASH</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== GAMEPLAY IN-GAME HUD ==================== -->
+  <div id="game-hud" class="hud-overlay hidden">
+    <!-- Top HUD: Score & Stats -->
+    <div class="hud-top">
+      <div class="hud-stats-cluster">
+        <div class="glass-panel hud-card">
+          <span class="hud-card-lbl">OCHKO / BALL</span>
+          <span id="hud-score-val" class="hud-card-val">0</span>
+        </div>
+        <div class="glass-panel hud-card">
+          <span class="hud-card-lbl">MASOFA</span>
+          <span id="hud-dist-val" class="hud-card-val">0.0 km</span>
+        </div>
+        <div class="glass-panel hud-card coins-hud">
+          <span class="hud-card-lbl">TANGALAR</span>
+          <span id="hud-coins-val" class="hud-card-val">0</span>
+        </div>
+        <div class="glass-panel hud-card overtake-hud">
+          <span class="hud-card-lbl">QUVIB O'TISH</span>
+          <span id="hud-overtake-val" class="hud-card-val">0</span>
+        </div>
+      </div>
+
+      <div class="hud-quick-actions">
+        <button id="btn-audio-toggle" class="icon-btn" title="Ovozni o'chirish/yoqish">🔊</button>
+        <button id="btn-cam" class="icon-btn" title="Kamerani almashtirish (C)">🎥</button>
+      </div>
+    </div>
+
+    <!-- Bottom HUD: Nitro & Tachometer -->
+    <div class="hud-bottom">
+      <div class="hud-left-controls-info">
+        <!-- Nitro cluster -->
+        <div class="glass-panel nitro-cluster">
+          <div class="nitro-header">
+            <span class="nitro-title">🚀 NITRO BOOST [SHIFT]</span>
+            <span id="hud-nitro-text" class="nitro-pct">100%</span>
+          </div>
+          <div class="nitro-track">
+            <div id="hud-nitro-fill" class="nitro-fill"></div>
+          </div>
+        </div>
+
+        <!-- Controls Legend -->
+        <div class="keys-legend">
+          <span><span class="key-tag">W / ↑</span> Gaz &nbsp; <span class="key-tag">S / ↓</span> Tormoz</span>
+          <span><span class="key-tag">A / ←</span> Chapga &nbsp; <span class="key-tag">D / →</span> O'ngga</span>
+          <span><span class="key-tag">Shift</span> Nitro &nbsp; <span class="key-tag">Space</span> Drift &nbsp; <span class="key-tag">H</span> Signal</span>
+        </div>
+      </div>
+
+      <!-- Realistic Speedometer & Tachometer -->
+      <div class="tach-cluster">
+        <div class="tach-dial">
+          <div class="tach-ticks"></div>
+          <div class="needle-pivot">
+            <div id="tach-needle" class="needle"></div>
+          </div>
+          <div class="tach-center-info">
+            <span id="hud-speed-num" class="speed-digital">0</span>
+            <span class="speed-unit">KM / SOAT</span>
+            <span class="gear-badge">UZATMA <span id="hud-gear-num">1</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onscreen Mobile Touch Controls -->
+  <div class="touch-controls">
+    <div class="touch-cluster">
+      <button id="touch-left" class="touch-btn">◀</button>
+      <button id="touch-right" class="touch-btn">▶</button>
+    </div>
+    <div class="touch-cluster">
+      <button id="touch-drift" class="touch-btn">🔄</button>
+      <button id="touch-horn" class="touch-btn">📢</button>
+      <button id="touch-nitro" class="touch-btn btn-nitro">🚀</button>
+      <button id="touch-brake" class="touch-btn">🛑</button>
+      <button id="touch-gas" class="touch-btn">⚡</button>
+    </div>
+  </div>
+
+  <!-- ==================== GAME OVER MODAL ==================== -->
+  <div id="game-over-modal" class="modal-overlay hidden">
+    <div class="glass-panel modal-card">
+      <div class="modal-icon">💥</div>
+      <h2 class="modal-title">HALOKAT YUZ BERDI!</h2>
+      <p class="modal-subtitle">Trassada ehtiyot bo'ling va yuqori tezlikda reaksiyani oshiring!</p>
+
+      <div class="modal-stats-list">
+        <div class="modal-stat-item">
+          <span>🏁 To'plangan Ball:</span>
+          <span id="go-score" class="modal-stat-num">0</span>
+        </div>
+        <div class="modal-stat-item">
+          <span>🛣️ Bosib o'tilgan masofa:</span>
+          <span id="go-dist" class="modal-stat-num">0.0 km</span>
+        </div>
+        <div class="modal-stat-item">
+          <span>🔥 Quvib o'tilgan mashinalar:</span>
+          <span id="go-overtakes" class="modal-stat-num">0</span>
+        </div>
+        <div class="modal-stat-item">
+          <span>🪙 Topilgan tangalar:</span>
+          <span id="go-coins" class="modal-stat-num highlight">+0 🪙</span>
+        </div>
+        <div class="modal-stat-item">
+          <span>🏆 Eng yaxshi rekord:</span>
+          <span id="go-best" class="modal-stat-num highlight">0</span>
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button id="btn-restart" class="btn-cta btn-play">🔄 QAYTA BOSHLASH</button>
+        <button id="btn-back-menu" class="btn-cta btn-buy">🏠 GARAJGA QAYTISH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="audio.js"></script>
+  <script src="models.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
